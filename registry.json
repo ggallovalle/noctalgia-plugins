@@ -3,7 +3,7 @@
     {
       "id": "copyq-clipboard",
       "name": "CopyQ Clipboard",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "description": "Clipboard history panel backed by CopyQ. Provides search, pinning, and image previews.",
       "tags": ["Utility", "Bar", "Panel"],
       "repository": "https://github.com/ggallovalle/noctalgia-plugins",
