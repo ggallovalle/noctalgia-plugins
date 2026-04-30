@@ -325,7 +325,7 @@ Item {
             return;
         const cap = pluginApi?.pluginSettings?.maxHistorySize ?? 100;
         listProc.command = ["bash", "-c",
-            "copyq eval 'var s = size(); var limit = " + cap + "; for (var i = 0; i < s && i < limit; i++) { var text = str(read(i)); var mime = data(i).mime; print(i + \"\\t\" + mime + \"\\t\" + text); }'"];
+            "copyq eval 'var s = size(); var limit = " + cap + "; for (var i = 0; i < s && i < limit; i++) { var img = read(i, \"image/png\"); if (img && img.length > 0) { print(i + \"\\timage/png\\t[[binary \" + img.length + \"]]\"); } else { var txt = str(read(i)); print(i + \"\\ttext/plain\\t\" + txt); } }'"];
         listProc.running = true;
     }
 
@@ -462,7 +462,7 @@ Item {
         root.decodeQueue = root.decodeQueue.slice(1);
         root.decodingId = sid;
         decodeProc.command = ["bash", "-c",
-            "copyq read image/png " + sid + " > /tmp/copyq-clipboard-" + sid + ".png 2>/dev/null || true"];
+            "copyq read " + sid + " image/png > /tmp/copyq-clipboard-" + sid + ".png 2>/dev/null || true"];
         decodeProc.running = true;
     }
 
