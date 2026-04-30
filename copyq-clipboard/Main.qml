@@ -287,7 +287,22 @@ Item {
             const id = root.decodingId;
             root.decodingId = "";
             if (exitCode === 0 && id) {
-                root.addToImageCache(id, "file:///tmp/copyq-clipboard-" + id + ".png");
+                const path = "/tmp/copyq-clipboard-" + id + ".png";
+                const file = new FileView({ path: path, watchChanges: false, printErrors: false });
+                file.onLoaded = function() {
+                    const bytes = file.text();
+                    const len = bytes ? bytes.length : 0;
+                    if (len > 8) {
+                        const firstBytes = len >= 4 ? bytes[0] : 0;
+                        if (firstBytes === 0x89) {
+                            root.addToImageCache(id, "file://" + path);
+                        }
+                    }
+                    file.destroy();
+                };
+                file.onLoadFailed = function() {
+                    file.destroy();
+                };
             }
             root._processNextDecode();
         }
