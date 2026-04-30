@@ -1,0 +1,27 @@
+{
+  "id": "copyq-clipboard",
+  "name": "CopyQ Clipboard",
+  "version": "1.0.0",
+  "minNoctaliaVersion": "4.1.2",
+  "author": "kbroom",
+  "repository": "https://github.com/kbroom/noctalia-plugins",
+  "license": "MIT",
+  "description": "Clipboard history panel backed by CopyQ. Provides search, pinning, and image previews.",
+  "tags": ["Utility", "Bar", "Panel"],
+  "entryPoints": {
+    "main": "Main.qml",
+    "barWidget": "BarWidget.qml",
+    "panel": "Panel.qml",
+    "settings": "Settings.qml"
+  },
+  "dependencies": {
+    "plugins": []
+  },
+  "metadata": {
+    "defaultSettings": {
+      "maxHistorySize": 100,
+      "showImagePreviews": true,
+      "density": "comfortable"
+    }
+  }
+}
