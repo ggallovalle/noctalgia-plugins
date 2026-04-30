@@ -544,12 +544,9 @@ Item {
                 color: Qt.alpha(Color.mError, 0.15)
                 border.color: Color.mError
                 border.width: Style.borderS
-                padding.top: Style.marginS
-                padding.bottom: Style.marginS
-                padding.left: Style.marginM
-                padding.right: Style.marginM
 
                 NText {
+                    anchors.centerIn: parent
                     text: root.pluginApi?.tr("panel.copyq-unavailable")
                     pointSize: Style.fontSizeS
                     color: Color.mError
