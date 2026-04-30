@@ -8,6 +8,7 @@
   },
   "panel": {
     "title": "Clipboard History",
+    "copyq-unavailable": "CopyQ is not running. Start it with: copyq &",
     "empty": "No clipboard history yet",
     "no-matches": "No matches",
     "search-placeholder": "Search...",

@@ -386,7 +386,15 @@ Item {
 
         let content = entry.preview;
         if (entry.type === "image") {
-            content = entry.preview;
+            const cachedPath = root.imageCache[entry.id];
+            if (cachedPath) {
+                content = cachedPath;
+            } else {
+                content = entry.preview;
+            }
+        } else if (entry.type === "file") {
+            const uri = entry.preview.indexOf("file://") === 0 ? entry.preview : "file://" + entry.preview;
+            content = uri;
         }
 
         const record = { preview: entry.preview, type: entry.type, content: content };
@@ -423,7 +431,10 @@ Item {
         const type = String(entry.type || "text");
         const content = String(entry.content || "");
 
-        if (type === "file") {
+        if (type === "image") {
+            const path = content.startsWith("file://") ? content.substring(7) : content;
+            copyProc.command = ["bash", "-c", 'copyq copy image/png - < "$1"', "--", path];
+        } else if (type === "file") {
             const uri = preview.indexOf("file://") === 0 ? preview : "file://" + preview;
             copyProc.command = ["bash", "-c",
                 'printf "copy\n%s\n" "$1" | copyq write -', "--", uri];
