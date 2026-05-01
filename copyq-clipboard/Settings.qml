@@ -12,24 +12,12 @@ ColumnLayout {
     property int valueMaxHistorySize: pluginApi?.pluginSettings?.maxHistorySize ?? 100
     property bool valueShowImagePreviews: pluginApi?.pluginSettings?.showImagePreviews ?? true
     property string valueDensity: pluginApi?.pluginSettings?.density ?? "comfortable"
-    property var valueInlineActions: {
-        const defaults = {
-            pin: true,
-            delete: true,
-            edit: false,
-            openExternal: true,
-            expand: false
-        };
-        const saved = pluginApi?.pluginSettings?.inlineActions;
-        if (!saved) return defaults;
-        return {
-            pin: saved.pin ?? defaults.pin,
-            delete: saved.delete ?? defaults.delete,
-            edit: saved.edit ?? defaults.edit,
-            openExternal: saved.openExternal ?? defaults.openExternal,
-            expand: saved.expand ?? defaults.expand
-        };
-    }
+    
+    property bool valueInlineActionPin: pluginApi?.pluginSettings?.inlineActions?.pin ?? true
+    property bool valueInlineActionDelete: pluginApi?.pluginSettings?.inlineActions?.delete ?? true
+    property bool valueInlineActionEdit: pluginApi?.pluginSettings?.inlineActions?.edit ?? false
+    property bool valueInlineActionOpenExternal: pluginApi?.pluginSettings?.inlineActions?.openExternal ?? true
+    property bool valueInlineActionExpand: pluginApi?.pluginSettings?.inlineActions?.expand ?? false
 
     NSpinBox {
         Layout.fillWidth: true
@@ -82,36 +70,36 @@ ColumnLayout {
     NToggle {
         Layout.fillWidth: true
         label: pluginApi?.tr("settings.inline-action-pin")
-        checked: root.valueInlineActions.pin
-        onToggled: checked => { root.valueInlineActions.pin = checked; }
+        checked: root.valueInlineActionPin
+        onToggled: checked => { root.valueInlineActionPin = checked; }
     }
 
     NToggle {
         Layout.fillWidth: true
         label: pluginApi?.tr("settings.inline-action-delete")
-        checked: root.valueInlineActions.delete
-        onToggled: checked => { root.valueInlineActions.delete = checked; }
+        checked: root.valueInlineActionDelete
+        onToggled: checked => { root.valueInlineActionDelete = checked; }
     }
 
     NToggle {
         Layout.fillWidth: true
         label: pluginApi?.tr("settings.inline-action-edit")
-        checked: root.valueInlineActions.edit
-        onToggled: checked => { root.valueInlineActions.edit = checked; }
+        checked: root.valueInlineActionEdit
+        onToggled: checked => { root.valueInlineActionEdit = checked; }
     }
 
     NToggle {
         Layout.fillWidth: true
         label: pluginApi?.tr("settings.inline-action-open")
-        checked: root.valueInlineActions.openExternal
-        onToggled: checked => { root.valueInlineActions.openExternal = checked; }
+        checked: root.valueInlineActionOpenExternal
+        onToggled: checked => { root.valueInlineActionOpenExternal = checked; }
     }
 
     NToggle {
         Layout.fillWidth: true
         label: pluginApi?.tr("settings.inline-action-expand")
-        checked: root.valueInlineActions.expand
-        onToggled: checked => { root.valueInlineActions.expand = checked; }
+        checked: root.valueInlineActionExpand
+        onToggled: checked => { root.valueInlineActionExpand = checked; }
     }
 
     function saveSettings() {
@@ -121,7 +109,13 @@ ColumnLayout {
         pluginApi.pluginSettings.maxHistorySize = root.valueMaxHistorySize;
         pluginApi.pluginSettings.showImagePreviews = root.valueShowImagePreviews;
         pluginApi.pluginSettings.density = root.valueDensity;
-        pluginApi.pluginSettings.inlineActions = root.valueInlineActions;
+        pluginApi.pluginSettings.inlineActions = {
+            pin: root.valueInlineActionPin,
+            delete: root.valueInlineActionDelete,
+            edit: root.valueInlineActionEdit,
+            openExternal: root.valueInlineActionOpenExternal,
+            expand: root.valueInlineActionExpand
+        };
         pluginApi.saveSettings();
     }
 }
