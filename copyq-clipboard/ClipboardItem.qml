@@ -167,7 +167,7 @@ Item {
         }
     }
 
-    function showContextMenuAt(position, anchor) {
+    function showContextMenuAt(anchor) {
         const itemData = {
             id: card.entryId,
             preview: card.previewText,
@@ -175,10 +175,7 @@ Item {
             pinned: card.pinned,
             pinnedIndex: card.pinnedIndex
         };
-        
-        // Map position to global coordinates
-        const globalPos = anchor.mapToItem(null, position.x, position.y);
-        card.requestContextMenu(itemData, globalPos, null);
+        card.requestContextMenu(itemData, anchor);
     }
 
     HoverHandler { id: cardHover }
@@ -415,8 +412,7 @@ Item {
                 tooltipText: card.pluginApi?.tr("panel.actions")
                 baseSize: Style.baseWidgetSize * 0.7
                 onClicked: {
-                    const globalPos = menuButton.mapToItem(null, menuButton.width, menuButton.height / 2);
-                    card.showContextMenuAt(globalPos, null);
+                    card.showContextMenuAt(menuButton);
                 }
             }
         }
@@ -483,8 +479,7 @@ Item {
             tooltipText: card.pluginApi?.tr("panel.actions")
             baseSize: Style.baseWidgetSize * 0.5
             onClicked: {
-                const globalPos = compactMenuButton.mapToItem(null, compactMenuButton.width / 2, compactMenuButton.height);
-                card.showContextMenuAt(globalPos, null);
+                card.showContextMenuAt(compactMenuButton);
             }
         }
     }
@@ -501,8 +496,7 @@ Item {
         onReleased: card.pressed = false
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                const globalPos = rowArea.mapToItem(null, mouse.x, mouse.y);
-                card.showContextMenuAt(globalPos, null);
+                card.showContextMenuAt(rowArea);
                 return;
             }
             if (!card.entryId)
