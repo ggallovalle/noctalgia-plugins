@@ -313,9 +313,10 @@ Item {
         anchors.fill: parent
 
         Image {
-            anchors.fill: parent
-            anchors.margins: Style.marginXS
-            fillMode: Image.PreserveAspectCrop
+            anchors.centerIn: parent
+            width: Math.min(parent.width - Style.marginS * 2, sourceSize.width)
+            height: Math.min(parent.height - Style.marginS * 2, sourceSize.height)
+            fillMode: Image.PreserveAspectFit
             asynchronous: true
             cache: true
             smooth: true
@@ -323,6 +324,14 @@ Item {
                 const _rev = card.pluginApi?.mainInstance?.imageCacheRevision ?? 0;
                 return card.pluginApi?.mainInstance?.imageCache?.[card.entryId] ?? "";
             }
+        }
+
+        NBox {
+            anchors.fill: parent
+            anchors.margins: Style.marginXS
+            radius: Style.radiusS
+            color: Qt.alpha(Color.mSurfaceVariant, 0.5)
+            visible: !card.pluginApi?.mainInstance?.imageCache?.[card.entryId]
         }
 
         NIcon {

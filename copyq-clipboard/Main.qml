@@ -477,7 +477,7 @@ Item {
         root.decodeQueue = root.decodeQueue.slice(1);
         root.decodingId = sid;
         decodeProc.command = ["bash", "-c",
-            "copyq read " + sid + " image/png > /tmp/copyq-clipboard-" + sid + ".png 2>/dev/null || true"];
+            "copyq read image/png " + sid + " > /tmp/copyq-clipboard-" + sid + ".png 2>/dev/null || true"];
         decodeProc.running = true;
     }
 
