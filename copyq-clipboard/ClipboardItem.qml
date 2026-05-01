@@ -167,7 +167,7 @@ Item {
         }
     }
 
-    function showContextMenuAt(anchor) {
+    function showContextMenuAt() {
         const itemData = {
             id: card.entryId,
             preview: card.previewText,
@@ -175,7 +175,7 @@ Item {
             pinned: card.pinned,
             pinnedIndex: card.pinnedIndex
         };
-        card.requestContextMenu(itemData, anchor);
+        card.requestContextMenu(itemData);
     }
 
     HoverHandler { id: cardHover }
@@ -412,7 +412,7 @@ Item {
                 tooltipText: card.pluginApi?.tr("panel.actions")
                 baseSize: Style.baseWidgetSize * 0.7
                 onClicked: {
-                    card.showContextMenuAt(menuButton);
+                    card.showContextMenuAt();
                 }
             }
         }
@@ -479,7 +479,7 @@ Item {
             tooltipText: card.pluginApi?.tr("panel.actions")
             baseSize: Style.baseWidgetSize * 0.5
             onClicked: {
-                card.showContextMenuAt(compactMenuButton);
+                card.showContextMenuAt();
             }
         }
     }
@@ -496,7 +496,7 @@ Item {
         onReleased: card.pressed = false
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                card.showContextMenuAt(rowArea);
+                card.showContextMenuAt();
                 return;
             }
             if (!card.entryId)

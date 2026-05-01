@@ -702,9 +702,9 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
-                    onRequestContextMenu: (itemData, anchor) => {
+                    onRequestContextMenu: (itemData) => {
                         root.contextMenuItemData = itemData;
-                        PanelService.showContextMenu(itemContextMenu, anchor, root.pluginApi?.panelOpenScreen);
+                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
             }
@@ -734,9 +734,9 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
-                    onRequestContextMenu: (itemData, anchor) => {
+                    onRequestContextMenu: (itemData) => {
                         root.contextMenuItemData = itemData;
-                        PanelService.showContextMenu(itemContextMenu, anchor, root.pluginApi?.panelOpenScreen);
+                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
             }
