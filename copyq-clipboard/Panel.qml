@@ -685,6 +685,7 @@ Item {
                 reuseItems: true
 
                 delegate: ClipboardItem {
+                    id: clipItem
                     pluginApi: root.pluginApi
                     entryId: modelData.id
                     previewText: modelData.preview
@@ -694,7 +695,7 @@ Item {
                     compact: false
                     selected: index === root.selectedIndex
                     width: historyList.width
-                    height: Math.round(44 * Style.uiScaleRatio)
+                    height: clipItem.contentHeight
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}

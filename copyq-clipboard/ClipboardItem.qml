@@ -74,6 +74,25 @@ Item {
     signal deleted()
 
     property bool pressed: false
+    property bool expanded: false
+
+    readonly property bool canExpand: card.itemType === "text" && !card.renderAsImage && !card.renderAsFile && !card.compact
+
+    readonly property real contentHeight: {
+        const baseHeight = Math.round(44 * Style.uiScaleRatio);
+        if (!card.expanded || !card.canExpand)
+            return baseHeight;
+        const lineHeight = Style.fontSizeM * 1.5;
+        const lines = Math.min(10, Math.ceil(previewLabel.paintedHeight / lineHeight));
+        const extraHeight = (lines - 1) * lineHeight;
+        return baseHeight + extraHeight;
+    }
+
+    function toggleExpand() {
+        if (card.canExpand) {
+            card.expanded = !card.expanded;
+        }
+    }
 
     HoverHandler { id: cardHover }
 
@@ -113,17 +132,35 @@ Item {
             }
         }
 
-        NText {
-            id: previewLabel
+        RowLayout {
+            id: textRow
             visible: !card.renderAsImage && !card.renderAsFile && card.itemType !== "image"
             Layout.fillWidth: true
-            text: card.previewText
-            pointSize: Style.fontSizeM
-            font.weight: Font.Normal
-            color: Color.mOnSurface
-            elide: Text.ElideRight
-            maximumLineCount: 1
-            wrapMode: Text.NoWrap
+            spacing: Style.marginXS
+
+            NText {
+                id: previewLabel
+                Layout.fillWidth: true
+                text: card.previewText
+                pointSize: Style.fontSizeM
+                font.weight: Font.Normal
+                color: Color.mOnSurface
+                elide: card.expanded ? Text.ElideNone : Text.ElideRight
+                maximumLineCount: card.expanded ? 10 : 1
+                wrapMode: card.expanded ? Text.Wrap : Text.NoWrap
+            }
+
+            NIconButton {
+                id: expandButton
+                visible: card.canExpand && card.previewText.length > 80
+                rotation: card.expanded ? 180 : 0
+                icon: "chevron-down"
+                tooltipText: card.expanded
+                    ? card.pluginApi?.tr("panel.collapse")
+                    : card.pluginApi?.tr("panel.expand")
+                baseSize: Style.baseWidgetSize * 0.6
+                onClicked: card.toggleExpand()
+            }
         }
 
         RowLayout {
@@ -329,6 +366,7 @@ Item {
         id: rowArea
         z: -1
         anchors.fill: parent
+        anchors.rightMargin: expandButton.visible ? expandButton.width + Style.marginXS : 0
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.PointingHandCursor

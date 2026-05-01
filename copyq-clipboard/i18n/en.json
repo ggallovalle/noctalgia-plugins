@@ -23,7 +23,9 @@
     "filter-files": "Files",
     "filter-text-count": "Text ({count})",
     "filter-images-count": "Images ({count})",
-    "filter-files-count": "Files ({count})"
+    "filter-files-count": "Files ({count})",
+    "expand": "Show more",
+    "collapse": "Show less"
   },
   "settings": {
     "tab-general": "General",
