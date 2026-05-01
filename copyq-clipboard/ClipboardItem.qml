@@ -132,6 +132,19 @@ Item {
             }
         }
 
+        NIconButton {
+            id: openImageButton
+            visible: card.renderAsImage
+            icon: "external-link"
+            tooltipText: card.pluginApi?.tr("panel.open-external")
+            baseSize: Style.baseWidgetSize * 0.6
+            onClicked: {
+                if (!card.entryId)
+                    return;
+                card.pluginApi?.mainInstance?.openImage(card.entryId);
+            }
+        }
+
         RowLayout {
             id: textRow
             visible: !card.renderAsImage && !card.renderAsFile && card.itemType !== "image"
@@ -342,6 +355,21 @@ Item {
             icon: "pin"
             pointSize: Style.fontSizeL
             color: Color.mPrimary
+        }
+
+        NIconButton {
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.margins: Style.marginS
+            visible: card.renderAsImage
+            icon: "external-link"
+            tooltipText: card.pluginApi?.tr("panel.open-external")
+            baseSize: Style.baseWidgetSize * 0.5
+            onClicked: {
+                if (!card.entryId)
+                    return;
+                card.pluginApi?.mainInstance?.openImage(card.entryId);
+            }
         }
 
         NIconButton {

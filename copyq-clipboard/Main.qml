@@ -176,6 +176,29 @@ Item {
     }
 
     Process {
+        id: openImageProc
+        stdout: StdioCollector {}
+        stderr: StdioCollector {}
+    }
+
+    function openImage(id) {
+        if (!id)
+            return;
+        const cachedPath = root.imageCache[id];
+        if (!cachedPath) {
+            root.decodeQueue = [...root.decodeQueue, id];
+            root._processNextDecode();
+            root._openImageAfterDecode = id;
+            return;
+        }
+        const path = cachedPath.startsWith("file://") ? cachedPath.substring(7) : cachedPath;
+        openImageProc.command = ["xdg-open", path];
+        openImageProc.running = true;
+    }
+
+    property string _openImageAfterDecode: ""
+
+    Process {
         id: removeProc
         stdout: StdioCollector {}
         stderr: StdioCollector {}
@@ -296,6 +319,10 @@ Item {
                         const firstBytes = len >= 4 ? bytes[0] : 0;
                         if (firstBytes === 0x89) {
                             root.addToImageCache(id, "file://" + path);
+                            if (root._openImageAfterDecode === id) {
+                                root._openImageAfterDecode = "";
+                                root.openImage(id);
+                            }
                         }
                     }
                     file.destroy();

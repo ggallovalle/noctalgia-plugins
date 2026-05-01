@@ -25,7 +25,8 @@
     "filter-images-count": "Images ({count})",
     "filter-files-count": "Files ({count})",
     "expand": "Show more",
-    "collapse": "Show less"
+    "collapse": "Show less",
+    "open-external": "Open in external viewer"
   },
   "settings": {
     "tab-general": "General",
