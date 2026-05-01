@@ -15,6 +15,7 @@ Item {
     property int pinnedIndex: -1
     property bool compact: false
     property bool selected: false
+    property var panelRoot: null
 
     readonly property bool renderAsImage: card.itemType === "image"
         && !card.pinned
@@ -72,7 +73,6 @@ Item {
 
     signal copied()
     signal deleted()
-    signal contextMenuOpened(var item)
 
     property bool pressed: false
     property bool expanded: false
@@ -129,6 +129,10 @@ Item {
         onVisibleChanged: {
             if (!visible) {
                 card.focus = true;
+                // Clear active context menu reference
+                if (card.panelRoot && card.panelRoot.activeContextMenu === itemContextMenu) {
+                    card.panelRoot.activeContextMenu = null;
+                }
             }
         }
     }
@@ -222,16 +226,21 @@ Item {
     }
 
     function showContextMenuAt(anchor) {
-        // Close any other open context menus first
-        card.contextMenuOpened(card);
+        // Close any previously open context menu
+        if (card.panelRoot && card.panelRoot.activeContextMenu && card.panelRoot.activeContextMenu !== itemContextMenu) {
+            card.panelRoot.activeContextMenu.visible = false;
+        }
         
         // Position anchor at the clicked element
         const pos = anchor.mapToItem(card, 0, anchor.height / 2);
         menuAnchor.x = pos.x;
         menuAnchor.y = pos.y;
         
-        // Show menu
+        // Show menu and track it as active
         itemContextMenu.visible = true;
+        if (card.panelRoot) {
+            card.panelRoot.activeContextMenu = itemContextMenu;
+        }
     }
 
     HoverHandler { id: cardHover }

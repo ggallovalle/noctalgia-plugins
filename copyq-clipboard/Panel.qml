@@ -51,6 +51,9 @@ Item {
     property int selectedIndex: -1
     property int _pendingClampIndex: -1
 
+    // Track currently open context menu
+    property var activeContextMenu: null
+
     onFilteredItemsChanged: {
         if (root._pendingClampIndex >= 0) {
             const n = root.filteredItems.length;
@@ -687,6 +690,7 @@ Item {
                 delegate: ClipboardItem {
                     id: clipItem
                     pluginApi: root.pluginApi
+                    panelRoot: root
                     entryId: modelData.id
                     previewText: modelData.preview
                     itemType: modelData.type
@@ -699,15 +703,6 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
-                    onContextMenuOpened: openedItem => {
-                        // Close context menus on all other items
-                        for (let i = 0; i < historyList.contentItem.children.length; i++) {
-                            const child = historyList.contentItem.children[i];
-                            if (child !== openedItem && child.itemContextMenu) {
-                                child.itemContextMenu.visible = false;
-                            }
-                        }
-                    }
                 }
             }
 
@@ -724,6 +719,7 @@ Item {
 
                 delegate: ClipboardItem {
                     pluginApi: root.pluginApi
+                    panelRoot: root
                     entryId: modelData.id
                     previewText: modelData.preview
                     itemType: modelData.type
@@ -736,15 +732,6 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
-                    onContextMenuOpened: openedItem => {
-                        // Close context menus on all other items
-                        for (let i = 0; i < imageGrid.contentItem.children.length; i++) {
-                            const child = imageGrid.contentItem.children[i];
-                            if (child !== openedItem && child.itemContextMenu) {
-                                child.itemContextMenu.visible = false;
-                            }
-                        }
-                    }
                 }
             }
         }
