@@ -705,7 +705,7 @@ Item {
                     onRequestContextMenu: (itemData, position) => {
                         root.contextMenuItemData = itemData;
                         root.contextMenuPosition = position;
-                        itemContextMenu.popup();
+                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
             }
@@ -738,7 +738,7 @@ Item {
                     onRequestContextMenu: (itemData, position) => {
                         root.contextMenuItemData = itemData;
                         root.contextMenuPosition = position;
-                        itemContextMenu.popup();
+                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
             }
