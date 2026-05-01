@@ -694,6 +694,7 @@ Item {
                     compact: false
                     selected: index === root.selectedIndex
                     width: historyList.width
+                    height: Math.round(44 * Style.uiScaleRatio)
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
