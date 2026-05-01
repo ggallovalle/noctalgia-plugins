@@ -72,12 +72,65 @@ Item {
 
     signal copied()
     signal deleted()
-    signal requestContextMenu(var itemData)
 
     property bool pressed: false
     property bool expanded: false
-    property bool showContextMenu: false
-    property point contextMenuPosition: Qt.point(0, 0)
+
+    // Anchor point for context menu positioning
+    Item {
+        id: menuAnchor
+        width: 0
+        height: 0
+        visible: false
+    }
+
+    // Context menu
+    NPopupContextMenu {
+        id: itemContextMenu
+        anchorItem: menuAnchor
+
+        model: {
+            const isText = card.itemType === "text";
+            const isImage = card.itemType === "image";
+            const isFile = card.itemType === "file";
+            const isPinned = card.pinned;
+
+            const result = [
+                { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
+                { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
+                { type: "separator" },
+                {
+                    label: isPinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"),
+                    action: isPinned ? "unpin" : "pin",
+                    icon: isPinned ? "unpin" : "pin"
+                }
+            ];
+
+            if (isText) {
+                result.push({ label: card.pluginApi?.tr("panel.edit"), action: "edit", icon: "pencil" });
+            } else if (isImage) {
+                result.push({ label: card.pluginApi?.tr("panel.open-external"), action: "open", icon: "external-link" });
+            } else if (isFile) {
+                result.push({ label: card.pluginApi?.tr("panel.open-location"), action: "location", icon: "folder" });
+            }
+
+            result.push({ type: "separator" });
+            result.push({ label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" });
+
+            return result;
+        }
+
+        onTriggered: action => {
+            itemContextMenu.visible = false;
+            card.handleAction(action);
+        }
+
+        onVisibleChanged: {
+            if (!visible) {
+                card.focus = true;
+            }
+        }
+    }
 
     readonly property bool canExpand: card.itemType === "text" && !card.renderAsImage && !card.renderAsFile && !card.compact
 
@@ -167,15 +220,14 @@ Item {
         }
     }
 
-    function showContextMenuAt() {
-        const itemData = {
-            id: card.entryId,
-            preview: card.previewText,
-            type: card.itemType,
-            pinned: card.pinned,
-            pinnedIndex: card.pinnedIndex
-        };
-        card.requestContextMenu(itemData);
+    function showContextMenuAt(anchor) {
+        // Position anchor at the clicked element
+        const pos = anchor.mapToItem(card, 0, anchor.height / 2);
+        menuAnchor.x = pos.x;
+        menuAnchor.y = pos.y;
+        
+        // Show menu
+        itemContextMenu.visible = true;
     }
 
     HoverHandler { id: cardHover }
@@ -412,7 +464,7 @@ Item {
                 tooltipText: card.pluginApi?.tr("panel.actions")
                 baseSize: Style.baseWidgetSize * 0.7
                 onClicked: {
-                    card.showContextMenuAt();
+                    card.showContextMenuAt(menuButton);
                 }
             }
         }
@@ -479,7 +531,7 @@ Item {
             tooltipText: card.pluginApi?.tr("panel.actions")
             baseSize: Style.baseWidgetSize * 0.5
             onClicked: {
-                card.showContextMenuAt();
+                card.showContextMenuAt(compactMenuButton);
             }
         }
     }
@@ -496,7 +548,7 @@ Item {
         onReleased: card.pressed = false
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                card.showContextMenuAt();
+                card.showContextMenuAt(rowArea);
                 return;
             }
             if (!card.entryId)

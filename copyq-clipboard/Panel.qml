@@ -51,47 +51,6 @@ Item {
     property int selectedIndex: -1
     property int _pendingClampIndex: -1
 
-    property var contextMenuItemData: null
-    property point contextMenuPosition: Qt.point(0, 0)
-    property var contextMenuModelData: []
-    
-    function updateContextMenuModel() {
-        if (!root.contextMenuItemData) {
-            root.contextMenuModelData = [];
-            return;
-        }
-        
-        const item = root.contextMenuItemData;
-        const isText = item.type === "text";
-        const isImage = item.type === "image";
-        const isFile = item.type === "file";
-        const isPinned = item.pinned;
-        
-        const result = [
-            { label: root.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
-            { label: root.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
-            { type: "separator" },
-            { 
-                label: isPinned ? root.pluginApi?.tr("panel.unpin") : root.pluginApi?.tr("panel.pin"), 
-                action: isPinned ? "unpin" : "pin", 
-                icon: isPinned ? "unpin" : "pin" 
-            }
-        ];
-        
-        if (isText) {
-            result.push({ label: root.pluginApi?.tr("panel.edit"), action: "edit", icon: "pencil" });
-        } else if (isImage) {
-            result.push({ label: root.pluginApi?.tr("panel.open-external"), action: "open", icon: "external-link" });
-        } else if (isFile) {
-            result.push({ label: root.pluginApi?.tr("panel.open-location"), action: "location", icon: "folder" });
-        }
-        
-        result.push({ type: "separator" });
-        result.push({ label: root.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" });
-        
-        root.contextMenuModelData = result;
-    }
-
     onFilteredItemsChanged: {
         if (root._pendingClampIndex >= 0) {
             const n = root.filteredItems.length;
@@ -740,11 +699,6 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
-                    onRequestContextMenu: (itemData) => {
-                        root.contextMenuItemData = itemData;
-                        root.updateContextMenuModel();
-                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
-                    }
                 }
             }
 
@@ -773,89 +727,8 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
-                    onRequestContextMenu: (itemData) => {
-                        root.contextMenuItemData = itemData;
-                        root.updateContextMenuModel();
-                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
-                    }
                 }
             }
-        }
-    }
-
-    NPopupContextMenu {
-        id: itemContextMenu
-        model: root.contextMenuModelData
-        
-        onTriggered: action => {
-            if (!root.contextMenuItemData) return;
-            
-            const item = root.contextMenuItemData;
-            const main = root.pluginApi?.mainInstance;
-            if (!main) return;
-            
-            switch(action) {
-                case "copy":
-                    if (item.pinned && item.pinnedIndex >= 0) {
-                        main.copyPinned(item.pinnedIndex);
-                    } else {
-                        main.copy(item.id);
-                    }
-                    const typeSlug = item.type === "file" ? "file"
-                                   : item.type === "image" ? "image"
-                                   : "text";
-                    ToastService.showNotice(
-                        root.pluginApi?.tr("toast.item-copied-" + typeSlug + "-title"),
-                        root.pluginApi?.tr("toast.item-copied-" + typeSlug + "-body")
-                    );
-                    break;
-                    
-                case "copy-close":
-                    if (item.pinned && item.pinnedIndex >= 0) {
-                        main.copyPinned(item.pinnedIndex);
-                    } else {
-                        main.copy(item.id);
-                    }
-                    if (!root.pluginApi?.closePanel) return;
-                    var targetScreen = root.pluginApi.panelOpenScreen;
-                    root.pluginApi.closePanel(targetScreen);
-                    break;
-                    
-                case "pin":
-                    main.pin({ preview: item.preview, type: item.type });
-                    break;
-                    
-                case "unpin":
-                    if (item.pinnedIndex >= 0) {
-                        main.unpin(item.pinnedIndex);
-                    }
-                    break;
-                    
-                case "edit":
-                    if (item.id) {
-                        main.editItem(item.id, item.preview);
-                    }
-                    break;
-                    
-                case "open":
-                    if (item.id) {
-                        main.openImage(item.id);
-                    }
-                    break;
-                    
-                case "location":
-                    if (item.id) {
-                        main.openFileLocation(item.id);
-                    }
-                    break;
-                    
-                case "delete":
-                    if (!item.id) return;
-                    main.remove(item.id);
-                    break;
-            }
-            
-            root.contextMenuItemData = null;
         }
     }
 }
