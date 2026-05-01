@@ -340,7 +340,7 @@ Item {
             return;
         const cap = pluginApi?.pluginSettings?.maxHistorySize ?? 100;
         listProc.command = ["bash", "-c",
-            "copyq eval 'var s = size(); var limit = " + cap + "; for (var i = 0; i < s && i < limit; i++) { var txt = str(read(i)); print(i + \"\\ttext/plain\\t\" + txt); }'"];
+            "copyq eval 'var s = size(); var limit = " + cap + "; for (var i = 0; i < s && i < limit; i++) { var item = getItem(i); var mime = \"text/plain\"; if (\"image/png\" in item) { mime = \"image/png\"; } else if (\"text/uri-list\" in item) { mime = \"text/uri-list\"; } var txt = str(read(i)); print(i + \"\\t\" + mime + \"\\t\" + txt); }'"];
         listProc.running = true;
     }
 
