@@ -41,7 +41,6 @@
     "inline-action-edit": "Edit",
     "inline-action-open": "Open external (images/files)",
     "inline-action-expand": "Expand long text",
-  "settings": {
     "tab-general": "General",
     "max-history-size": "Maximum history size",
     "max-history-size-description": "Number of clipboard entries kept in history. Takes effect on the next refresh.",
