@@ -705,7 +705,10 @@ Item {
                     onRequestContextMenu: (itemData, position, anchor) => {
                         root.contextMenuItemData = itemData;
                         root.contextMenuPosition = position;
-                        PanelService.showContextMenu(itemContextMenu, anchor, root.pluginApi?.panelOpenScreen);
+                        root.contextMenuAnchor = anchor;
+                        itemContextMenu.x = position.x;
+                        itemContextMenu.y = position.y;
+                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
             }
@@ -738,7 +741,10 @@ Item {
                     onRequestContextMenu: (itemData, position, anchor) => {
                         root.contextMenuItemData = itemData;
                         root.contextMenuPosition = position;
-                        PanelService.showContextMenu(itemContextMenu, anchor, root.pluginApi?.panelOpenScreen);
+                        root.contextMenuAnchor = anchor;
+                        itemContextMenu.x = position.x;
+                        itemContextMenu.y = position.y;
+                        PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
             }

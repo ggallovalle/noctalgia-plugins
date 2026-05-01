@@ -167,7 +167,7 @@ Item {
         }
     }
 
-    function showContextMenuAt(position) {
+    function showContextMenuAt(position, anchor) {
         const itemData = {
             id: card.entryId,
             preview: card.previewText,
@@ -175,7 +175,10 @@ Item {
             pinned: card.pinned,
             pinnedIndex: card.pinnedIndex
         };
-        card.requestContextMenu(itemData, position, card);
+        
+        // Map position to global coordinates
+        const globalPos = anchor.mapToItem(null, position.x, position.y);
+        card.requestContextMenu(itemData, globalPos, null);
     }
 
     HoverHandler { id: cardHover }
@@ -412,7 +415,8 @@ Item {
                 tooltipText: card.pluginApi?.tr("panel.actions")
                 baseSize: Style.baseWidgetSize * 0.7
                 onClicked: {
-                    card.showContextMenuAt(Qt.point(menuButton.width, menuButton.height));
+                    const globalPos = menuButton.mapToItem(null, menuButton.width, menuButton.height / 2);
+                    card.showContextMenuAt(globalPos, null);
                 }
             }
         }
@@ -471,6 +475,7 @@ Item {
         }
 
         NIconButton {
+            id: compactMenuButton
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.margins: Style.marginS
@@ -478,7 +483,8 @@ Item {
             tooltipText: card.pluginApi?.tr("panel.actions")
             baseSize: Style.baseWidgetSize * 0.5
             onClicked: {
-                card.showContextMenuAt(Qt.point(width, height));
+                const globalPos = compactMenuButton.mapToItem(null, compactMenuButton.width / 2, compactMenuButton.height);
+                card.showContextMenuAt(globalPos, null);
             }
         }
     }
@@ -495,7 +501,8 @@ Item {
         onReleased: card.pressed = false
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                card.showContextMenuAt(Qt.point(mouse.x, mouse.y));
+                const globalPos = rowArea.mapToItem(null, mouse.x, mouse.y);
+                card.showContextMenuAt(globalPos, null);
                 return;
             }
             if (!card.entryId)
