@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
-import qs.Widgets
 
 Item {
     id: card
@@ -73,6 +72,7 @@ Item {
 
     signal copied()
     signal deleted()
+    signal requestContextMenu(var itemData, point position)
 
     property bool pressed: false
     property bool expanded: false
@@ -165,6 +165,17 @@ Item {
                 card.deleted();
                 break;
         }
+    }
+
+    function showContextMenuAt(position) {
+        const itemData = {
+            id: card.entryId,
+            preview: card.previewText,
+            type: card.itemType,
+            pinned: card.pinned,
+            pinnedIndex: card.pinnedIndex
+        };
+        card.requestContextMenu(itemData, position);
     }
 
     HoverHandler { id: cardHover }
@@ -401,8 +412,7 @@ Item {
                 tooltipText: card.pluginApi?.tr("panel.actions")
                 baseSize: Style.baseWidgetSize * 0.7
                 onClicked: {
-                    card.showContextMenu = true;
-                    card.contextMenuPosition = Qt.point(menuButton.width, menuButton.height);
+                    card.showContextMenuAt(Qt.point(menuButton.width, menuButton.height));
                 }
             }
         }
@@ -468,8 +478,7 @@ Item {
             tooltipText: card.pluginApi?.tr("panel.actions")
             baseSize: Style.baseWidgetSize * 0.5
             onClicked: {
-                card.showContextMenu = true;
-                card.contextMenuPosition = Qt.point(width, height);
+                card.showContextMenuAt(Qt.point(width, height));
             }
         }
     }
@@ -486,8 +495,7 @@ Item {
         onReleased: card.pressed = false
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                card.showContextMenu = true;
-                card.contextMenuPosition = Qt.point(mouse.x, mouse.y);
+                card.showContextMenuAt(Qt.point(mouse.x, mouse.y));
                 return;
             }
             if (!card.entryId)
@@ -508,59 +516,6 @@ Item {
                 card.pluginApi?.tr("toast.item-copied-" + typeSlug + "-body")
             );
             card.copied();
-        }
-    }
-
-    NPopupContextMenu {
-        id: itemContextMenu
-        parent: card
-        visible: card.showContextMenu
-        onClose: card.showContextMenu = false
-        
-        model: {
-            if (card.itemType === "text") {
-                return [
-                    { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
-                    { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
-                    { type: "separator" },
-                    { label: card.pinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"), 
-                      action: card.pinned ? "unpin" : "pin", 
-                      icon: card.pinned ? "unpin" : "pin" },
-                    { label: card.pluginApi?.tr("panel.edit"), action: "edit", icon: "pencil" },
-                    { type: "separator" },
-                    { label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" }
-                ];
-            } else if (card.itemType === "image") {
-                return [
-                    { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
-                    { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
-                    { type: "separator" },
-                    { label: card.pinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"), 
-                      action: card.pinned ? "unpin" : "pin", 
-                      icon: card.pinned ? "unpin" : "pin" },
-                    { label: card.pluginApi?.tr("panel.open-external"), action: "open", icon: "external-link" },
-                    { type: "separator" },
-                    { label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" }
-                ];
-            } else if (card.itemType === "file") {
-                return [
-                    { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
-                    { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
-                    { type: "separator" },
-                    { label: card.pinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"), 
-                      action: card.pinned ? "unpin" : "pin", 
-                      icon: card.pinned ? "unpin" : "pin" },
-                    { label: card.pluginApi?.tr("panel.open-location"), action: "location", icon: "folder" },
-                    { type: "separator" },
-                    { label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" }
-                ];
-            }
-            return [];
-        }
-        
-        onTriggered: action => {
-            card.showContextMenu = false;
-            card.handleAction(action);
         }
     }
 }
