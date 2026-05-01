@@ -53,6 +53,44 @@ Item {
 
     property var contextMenuItemData: null
     property point contextMenuPosition: Qt.point(0, 0)
+    property var contextMenuModelData: []
+    
+    function updateContextMenuModel() {
+        if (!root.contextMenuItemData) {
+            root.contextMenuModelData = [];
+            return;
+        }
+        
+        const item = root.contextMenuItemData;
+        const isText = item.type === "text";
+        const isImage = item.type === "image";
+        const isFile = item.type === "file";
+        const isPinned = item.pinned;
+        
+        const result = [
+            { label: root.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
+            { label: root.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
+            { type: "separator" },
+            { 
+                label: isPinned ? root.pluginApi?.tr("panel.unpin") : root.pluginApi?.tr("panel.pin"), 
+                action: isPinned ? "unpin" : "pin", 
+                icon: isPinned ? "unpin" : "pin" 
+            }
+        ];
+        
+        if (isText) {
+            result.push({ label: root.pluginApi?.tr("panel.edit"), action: "edit", icon: "pencil" });
+        } else if (isImage) {
+            result.push({ label: root.pluginApi?.tr("panel.open-external"), action: "open", icon: "external-link" });
+        } else if (isFile) {
+            result.push({ label: root.pluginApi?.tr("panel.open-location"), action: "location", icon: "folder" });
+        }
+        
+        result.push({ type: "separator" });
+        result.push({ label: root.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" });
+        
+        root.contextMenuModelData = result;
+    }
 
     onFilteredItemsChanged: {
         if (root._pendingClampIndex >= 0) {
@@ -704,6 +742,7 @@ Item {
                     onDeleted: {}
                     onRequestContextMenu: (itemData) => {
                         root.contextMenuItemData = itemData;
+                        root.updateContextMenuModel();
                         PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
@@ -736,6 +775,7 @@ Item {
                     onDeleted: {}
                     onRequestContextMenu: (itemData) => {
                         root.contextMenuItemData = itemData;
+                        root.updateContextMenuModel();
                         PanelService.showContextMenu(itemContextMenu, root, root.pluginApi?.panelOpenScreen);
                     }
                 }
@@ -745,40 +785,7 @@ Item {
 
     NPopupContextMenu {
         id: itemContextMenu
-        
-        model: {
-            if (!root.contextMenuItemData) return [];
-            
-            const item = root.contextMenuItemData;
-            const isText = item.type === "text";
-            const isImage = item.type === "image";
-            const isFile = item.type === "file";
-            const isPinned = item.pinned;
-            
-            const result = [
-                { label: root.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
-                { label: root.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
-                { type: "separator" },
-                { 
-                    label: isPinned ? root.pluginApi?.tr("panel.unpin") : root.pluginApi?.tr("panel.pin"), 
-                    action: isPinned ? "unpin" : "pin", 
-                    icon: isPinned ? "unpin" : "pin" 
-                }
-            ];
-            
-            if (isText) {
-                result.push({ label: root.pluginApi?.tr("panel.edit"), action: "edit", icon: "pencil" });
-            } else if (isImage) {
-                result.push({ label: root.pluginApi?.tr("panel.open-external"), action: "open", icon: "external-link" });
-            } else if (isFile) {
-                result.push({ label: root.pluginApi?.tr("panel.open-location"), action: "location", icon: "folder" });
-            }
-            
-            result.push({ type: "separator" });
-            result.push({ label: root.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" });
-            
-            return result;
-        }
+        model: root.contextMenuModelData
         
         onTriggered: action => {
             if (!root.contextMenuItemData) return;

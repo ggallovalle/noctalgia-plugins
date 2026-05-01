@@ -72,7 +72,7 @@ Item {
 
     signal copied()
     signal deleted()
-    signal requestContextMenu(var itemData, point position, var anchorItem)
+    signal requestContextMenu(var itemData)
 
     property bool pressed: false
     property bool expanded: false
