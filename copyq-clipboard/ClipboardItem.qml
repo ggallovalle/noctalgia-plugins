@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
+import qs.Widgets
 
 Item {
     id: card
