@@ -75,6 +75,8 @@ Item {
 
     property bool pressed: false
     property bool expanded: false
+    property bool showContextMenu: false
+    property point contextMenuPosition: Qt.point(0, 0)
 
     readonly property bool canExpand: card.itemType === "text" && !card.renderAsImage && !card.renderAsFile && !card.compact
 
@@ -91,6 +93,76 @@ Item {
     function toggleExpand() {
         if (card.canExpand) {
             card.expanded = !card.expanded;
+        }
+    }
+
+    function handleAction(action) {
+        const main = card.pluginApi?.mainInstance;
+        if (!main) return;
+        
+        switch(action) {
+            case "copy":
+                if (card.pinned && card.pinnedIndex >= 0) {
+                    main.copyPinned(card.pinnedIndex);
+                } else {
+                    main.copy(card.entryId);
+                }
+                const typeSlug = card.itemType === "file" ? "file"
+                               : card.itemType === "image" ? "image"
+                               : "text";
+                ToastService.showNotice(
+                    card.pluginApi?.tr("toast.item-copied-" + typeSlug + "-title"),
+                    card.pluginApi?.tr("toast.item-copied-" + typeSlug + "-body")
+                );
+                card.copied();
+                break;
+                
+            case "copy-close":
+                if (card.pinned && card.pinnedIndex >= 0) {
+                    main.copyPinned(card.pinnedIndex);
+                } else {
+                    main.copy(card.entryId);
+                }
+                card.copied();
+                if (!card.pluginApi?.closePanel) return;
+                var targetScreen = card.pluginApi.panelOpenScreen;
+                card.pluginApi.closePanel(targetScreen);
+                break;
+                
+            case "pin":
+                main.pin({ preview: card.previewText, type: card.itemType });
+                break;
+                
+            case "unpin":
+                if (card.pinnedIndex >= 0) {
+                    main.unpin(card.pinnedIndex);
+                }
+                card.deleted();
+                break;
+                
+            case "edit":
+                if (card.entryId) {
+                    main.editItem(card.entryId, card.previewText);
+                }
+                break;
+                
+            case "open":
+                if (card.entryId) {
+                    main.openImage(card.entryId);
+                }
+                break;
+                
+            case "location":
+                if (card.entryId) {
+                    main.openFileLocation(card.entryId);
+                }
+                break;
+                
+            case "delete":
+                if (!card.entryId) return;
+                main.remove(card.entryId);
+                card.deleted();
+                break;
         }
     }
 
@@ -134,7 +206,7 @@ Item {
 
         NIconButton {
             id: openImageButton
-            visible: card.renderAsImage
+            visible: card.renderAsImage && (card.pluginApi?.pluginSettings?.inlineActions?.openExternal ?? true)
             icon: "external-link"
             tooltipText: card.pluginApi?.tr("panel.open-external")
             baseSize: Style.baseWidgetSize * 0.6
@@ -165,7 +237,7 @@ Item {
 
             NIconButton {
                 id: expandButton
-                visible: card.canExpand && card.previewText.length > 80
+                visible: card.canExpand && card.previewText.length > 80 && (card.pluginApi?.pluginSettings?.inlineActions?.expand ?? false)
                 rotation: card.expanded ? 180 : 0
                 icon: "chevron-down"
                 tooltipText: card.expanded
@@ -280,6 +352,7 @@ Item {
                     icon: "pin"
                     tooltipText: card.pluginApi?.tr("panel.pin")
                     baseSize: Style.baseWidgetSize * 0.7
+                    visible: card.pluginApi?.pluginSettings?.inlineActions?.pin ?? true
                     onClicked: {
                         const main = card.pluginApi?.mainInstance;
                         if (!main)
@@ -292,6 +365,7 @@ Item {
                     icon: "trash"
                     tooltipText: card.pluginApi?.tr("panel.delete")
                     baseSize: Style.baseWidgetSize * 0.7
+                    visible: card.pluginApi?.pluginSettings?.inlineActions?.delete ?? true
                     onClicked: {
                         if (!card.entryId)
                             return;
@@ -315,6 +389,19 @@ Item {
                         return;
                     main.unpin(card.pinnedIndex);
                     card.deleted();
+                }
+            }
+
+            NIconButton {
+                id: menuButton
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                icon: "more-vertical"
+                tooltipText: card.pluginApi?.tr("panel.actions")
+                baseSize: Style.baseWidgetSize * 0.7
+                onClicked: {
+                    card.showContextMenu = true;
+                    card.contextMenuPosition = Qt.point(menuButton.width, menuButton.height);
                 }
             }
         }
@@ -361,7 +448,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             anchors.margins: Style.marginS
-            visible: card.renderAsImage
+            visible: card.renderAsImage && (card.pluginApi?.pluginSettings?.inlineActions?.openExternal ?? true)
             icon: "external-link"
             tooltipText: card.pluginApi?.tr("panel.open-external")
             baseSize: Style.baseWidgetSize * 0.5
@@ -376,25 +463,12 @@ Item {
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.margins: Style.marginS
-            opacity: cardHover.hovered ? 1 : 0
-            icon: card.pinned ? "unpin" : "trash"
-            tooltipText: card.pinned
-                ? card.pluginApi?.tr("panel.unpin")
-                : card.pluginApi?.tr("panel.delete")
-            baseSize: Style.baseWidgetSize * 0.8
+            icon: "more-vertical"
+            tooltipText: card.pluginApi?.tr("panel.actions")
+            baseSize: Style.baseWidgetSize * 0.5
             onClicked: {
-                const main = card.pluginApi?.mainInstance;
-                if (!main)
-                    return;
-                if (card.pinned) {
-                    if (card.pinnedIndex >= 0)
-                        main.unpin(card.pinnedIndex);
-                } else {
-                    if (!card.entryId)
-                        return;
-                    main.remove(card.entryId);
-                }
-                card.deleted();
+                card.showContextMenu = true;
+                card.contextMenuPosition = Qt.point(width, height);
             }
         }
     }
@@ -405,11 +479,16 @@ Item {
         anchors.fill: parent
         anchors.rightMargin: expandButton.visible ? expandButton.width + Style.marginXS : 0
         hoverEnabled: true
-        acceptedButtons: Qt.LeftButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
         onPressed: card.pressed = true
         onReleased: card.pressed = false
-        onClicked: {
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                card.showContextMenu = true;
+                card.contextMenuPosition = Qt.point(mouse.x, mouse.y);
+                return;
+            }
             if (!card.entryId)
                 return;
             const main = card.pluginApi?.mainInstance;
@@ -428,6 +507,59 @@ Item {
                 card.pluginApi?.tr("toast.item-copied-" + typeSlug + "-body")
             );
             card.copied();
+        }
+    }
+
+    NPopupContextMenu {
+        id: itemContextMenu
+        parent: card
+        visible: card.showContextMenu
+        onClose: card.showContextMenu = false
+        
+        model: {
+            if (card.itemType === "text") {
+                return [
+                    { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
+                    { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
+                    { type: "separator" },
+                    { label: card.pinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"), 
+                      action: card.pinned ? "unpin" : "pin", 
+                      icon: card.pinned ? "unpin" : "pin" },
+                    { label: card.pluginApi?.tr("panel.edit"), action: "edit", icon: "pencil" },
+                    { type: "separator" },
+                    { label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" }
+                ];
+            } else if (card.itemType === "image") {
+                return [
+                    { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
+                    { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
+                    { type: "separator" },
+                    { label: card.pinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"), 
+                      action: card.pinned ? "unpin" : "pin", 
+                      icon: card.pinned ? "unpin" : "pin" },
+                    { label: card.pluginApi?.tr("panel.open-external"), action: "open", icon: "external-link" },
+                    { type: "separator" },
+                    { label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" }
+                ];
+            } else if (card.itemType === "file") {
+                return [
+                    { label: card.pluginApi?.tr("panel.copy"), action: "copy", icon: "clipboard" },
+                    { label: card.pluginApi?.tr("panel.copy-and-close"), action: "copy-close", icon: "clipboard-check" },
+                    { type: "separator" },
+                    { label: card.pinned ? card.pluginApi?.tr("panel.unpin") : card.pluginApi?.tr("panel.pin"), 
+                      action: card.pinned ? "unpin" : "pin", 
+                      icon: card.pinned ? "unpin" : "pin" },
+                    { label: card.pluginApi?.tr("panel.open-location"), action: "location", icon: "folder" },
+                    { type: "separator" },
+                    { label: card.pluginApi?.tr("panel.delete"), action: "delete", icon: "trash", style: "danger" }
+                ];
+            }
+            return [];
+        }
+        
+        onTriggered: action => {
+            card.showContextMenu = false;
+            card.handleAction(action);
         }
     }
 }

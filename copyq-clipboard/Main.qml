@@ -199,6 +199,119 @@ Item {
     property string _openImageAfterDecode: ""
 
     Process {
+        id: editProc
+        stdout: StdioCollector {}
+        stderr: StdioCollector {}
+        
+        property string editId: ""
+        property string editTempPath: ""
+        
+        onExited: exitCode => {
+            if (exitCode === 0 && editProc.editId) {
+                const file = new FileView({ 
+                    path: editProc.editTempPath, 
+                    watchChanges: false, 
+                    printErrors: false 
+                });
+                file.onLoaded = function() {
+                    const newText = file.text;
+                    const updateProc = Qt.createQmlObject(`
+                        import Quickshell.Io;
+                        Process {
+                            stdout: StdioCollector {}
+                            stderr: StdioCollector {}
+                            onExited: function(code) {
+                                if (code === 0) {
+                                    root.refresh();
+                                    ToastService.showNotice("Item updated");
+                                } else {
+                                    ToastService.showNotice("Edit failed");
+                                }
+                                destroy();
+                            }
+                        }
+                    `, root);
+                    
+                    const escapedText = newText.replace(/'/g, "'\\''").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+                    updateProc.command = ["bash", "-c", 
+                        "copyq eval 'write(" + editProc.editId + ", \"" + escapedText + "\")'"
+                    ];
+                    updateProc.running = true;
+                    file.destroy();
+                };
+                file.onLoadFailed = function() {
+                    ToastService.showNotice("Edit cancelled");
+                    file.destroy();
+                };
+            } else {
+                ToastService.showNotice("Edit cancelled");
+            }
+            editProc.editId = "";
+            editProc.editTempPath = "";
+        }
+    }
+
+    function editItem(id, currentText) {
+        const editor = Quickshell.env("EDITOR") || "nvim";
+        const tempPath = "/tmp/clipboard-edit-" + id + ".txt";
+        
+        const writeProc = Qt.createQmlObject(`
+            import Quickshell.Io;
+            Process {
+                stdout: StdioCollector {}
+                stderr: StdioCollector {}
+                onExited: function(code) {
+                    if (code === 0) {
+                        editProc.editId = id;
+                        editProc.editTempPath = tempPath;
+                        editProc.command = [editor, tempPath];
+                        editProc.running = true;
+                    }
+                    destroy();
+                }
+            }
+        `, root);
+        
+        const escapedText = String(currentText).replace(/'/g, "'\\''").replace(/"/g, '\\"');
+        writeProc.command = ["bash", "-c", 'printf %s "' + escapedText + '" > "' + tempPath + '"'];
+        writeProc.running = true;
+    }
+
+    Process {
+        id: locationProc
+        stdout: StdioCollector {}
+        stderr: StdioCollector {}
+    }
+
+    function openFileLocation(id) {
+        if (!id) return;
+        
+        let entry = null;
+        for (let i = 0; i < root.items.length; i++) {
+            if (root.items[i].id === id) {
+                entry = root.items[i];
+                break;
+            }
+        }
+        if (!entry || entry.type !== "file") return;
+        
+        const path = root.fileUriToPath(entry.preview);
+        if (!path) return;
+        
+        const lastSlash = path.lastIndexOf("/");
+        if (lastSlash === -1) return;
+        const dir = path.substring(0, lastSlash);
+        
+        locationProc.command = ["bash", "-c", 
+            "if command -v dolphin &> /dev/null; then dolphin --select '" + path + "'; " +
+            "elif command -v nautilus &> /dev/null; then nautilus --select '" + path + "'; " +
+            "elif command -v thunar &> /dev/null; then thunar --select '" + path + "'; " +
+            "else xdg-open '" + dir + "'; fi"
+        ];
+        locationProc.running = true;
+    }
+
+    Process {
         id: removeProc
         stdout: StdioCollector {}
         stderr: StdioCollector {}

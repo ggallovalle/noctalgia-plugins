@@ -26,8 +26,21 @@
     "filter-files-count": "Files ({count})",
     "expand": "Show more",
     "collapse": "Show less",
-    "open-external": "Open in external viewer"
+    "open-external": "Open in external viewer",
+    "copy": "Copy",
+    "copy-and-close": "Copy and Close",
+    "edit": "Edit",
+    "open-location": "Open Location",
+    "actions": "Actions"
   },
+  "settings": {
+    "inline-actions": "Inline Actions",
+    "inline-actions-description": "Choose which actions appear when hovering over items",
+    "inline-action-pin": "Pin/Unpin",
+    "inline-action-delete": "Delete",
+    "inline-action-edit": "Edit",
+    "inline-action-open": "Open external (images/files)",
+    "inline-action-expand": "Expand long text",
   "settings": {
     "tab-general": "General",
     "max-history-size": "Maximum history size",

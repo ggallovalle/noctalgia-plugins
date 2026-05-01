@@ -1,7 +1,7 @@
 {
   "id": "copyq-clipboard",
   "name": "CopyQ Clipboard",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "minNoctaliaVersion": "4.1.2",
   "author": "kbroom",
   "repository": "https://github.com/kbroom/noctalia-plugins",
@@ -21,7 +21,14 @@
     "defaultSettings": {
       "maxHistorySize": 100,
       "showImagePreviews": true,
-      "density": "comfortable"
+      "density": "comfortable",
+      "inlineActions": {
+        "pin": true,
+        "delete": true,
+        "edit": false,
+        "openExternal": true,
+        "expand": false
+      }
     }
   }
 }
