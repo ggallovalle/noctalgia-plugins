@@ -72,7 +72,7 @@ Item {
 
     signal copied()
     signal deleted()
-    signal requestContextMenu(var itemData, point position)
+    signal requestContextMenu(var itemData, point position, var anchorItem)
 
     property bool pressed: false
     property bool expanded: false
@@ -175,7 +175,7 @@ Item {
             pinned: card.pinned,
             pinnedIndex: card.pinnedIndex
         };
-        card.requestContextMenu(itemData, position);
+        card.requestContextMenu(itemData, position, card);
     }
 
     HoverHandler { id: cardHover }
