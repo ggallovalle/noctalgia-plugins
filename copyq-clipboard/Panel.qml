@@ -699,6 +699,15 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
+                    onContextMenuOpened: openedItem => {
+                        // Close context menus on all other items
+                        for (let i = 0; i < historyList.contentItem.children.length; i++) {
+                            const child = historyList.contentItem.children[i];
+                            if (child !== openedItem && child.itemContextMenu) {
+                                child.itemContextMenu.visible = false;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -727,6 +736,15 @@ Item {
 
                     onCopied: closePanelTimer.restart()
                     onDeleted: {}
+                    onContextMenuOpened: openedItem => {
+                        // Close context menus on all other items
+                        for (let i = 0; i < imageGrid.contentItem.children.length; i++) {
+                            const child = imageGrid.contentItem.children[i];
+                            if (child !== openedItem && child.itemContextMenu) {
+                                child.itemContextMenu.visible = false;
+                            }
+                        }
+                    }
                 }
             }
         }

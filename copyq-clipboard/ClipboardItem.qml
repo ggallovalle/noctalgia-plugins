@@ -72,6 +72,7 @@ Item {
 
     signal copied()
     signal deleted()
+    signal contextMenuOpened(var item)
 
     property bool pressed: false
     property bool expanded: false
@@ -221,6 +222,9 @@ Item {
     }
 
     function showContextMenuAt(anchor) {
+        // Close any other open context menus first
+        card.contextMenuOpened(card);
+        
         // Position anchor at the clicked element
         const pos = anchor.mapToItem(card, 0, anchor.height / 2);
         menuAnchor.x = pos.x;
